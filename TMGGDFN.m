@@ -110,7 +110,7 @@ GETDFN2(ENTRY,AUTOREG)        ;
   ;"    ENTRY(.02)=Sex          e.g. M
   ;"    ENTRY(.03)=DOB          e.g. 01-04-69
   ;"    --Below are optional (depending IF fields have Fileman 'required' status)
-  ;"    ENTRY(.09)=SSNUM        e.g. 123-45-6789
+  ;"    ENTRY(.094)=SSNUM        e.g. 123-45-6789
   ;"    ENTRY(10,.01)=ALIAS     e.g. DOE,JOHNNY
   ;"    ENTRY(1901)=VETERAN
   ;"    ENTRY(.301)=PT_TYPE
@@ -157,11 +157,11 @@ PAT2ENTRY(PATIENT,ENTRY)        ;
   ;"  PATIENT("CITY")= "NEW YORK" -- optional
   ;"  PATIENT("STATE")= "NY" -- optional
   ;"  PATIENT("ZIP")=12345  --  optional
-  ;"  ENTRY; PASS BY REFERENCE, an OUT PARAMETER.
+  ;"ENTRY; PASS BY REFERENCE, an OUT PARAMETER.
   ;"  ENTRY(.01)=PatientName
   ;"  ENTRY(.02)=Sex
   ;"  ENTRY(.03)=DOB
-  ;"  ENTRY(.09)=SSNUM
+  ;"  ENTRY(.094)=SSNUM
   ;"  ENTRY(22700)=PatientNUM
   ;"  ENTRY(22701)=PMS ACCOUNT NUM
   ;"  ENTRY(22701)=SEQUELNUM
@@ -180,7 +180,7 @@ PAT2ENTRY(PATIENT,ENTRY)        ;
   IF $DATA(PATIENT("NAME")) SET ENTRY(.01)=$GET(PATIENT("NAME"))
   IF $DATA(PATIENT("SEX")) SET ENTRY(.02)=$GET(PATIENT("SEX"))
   IF $DATA(PATIENT("DOB")) SET ENTRY(.03)=$GET(PATIENT("DOB"))
-  IF $DATA(PATIENT("SSNUM")) SET ENTRY(537043)=$GET(PATIENT("SSNUM"))
+  IF $DATA(PATIENT("SSNUM")) SET ENTRY(.094)=$GET(PATIENT("SSNUM"))
   IF $DATA(PATIENT("PATIENTNUM")) SET ENTRY(22700)=$GET(PATIENT("PATIENTNUM"))
   IF $DATA(PATIENT("PMS ACCOUNT NUM")) SET ENTRY(22701)=$GET(PATIENT("PMS ACCOUNT NUM"))
   IF $DATA(PATIENT("SEQUELNUM")) SET ENTRY(22701)=$GET(PATIENT("SEQUELNUM"))
@@ -203,7 +203,7 @@ LOOKUPPAT(ENTRY)        ;
   ;"        SET ENTRY(.01)=Name
   ;"        SET ENTRY(.02)=Sex
   ;"        SET ENTRY(.03)=DOB
-  ;"        SET ENTRY(.09)=SSNUM (OPTIONAL)
+  ;"        SET ENTRY(.094)=SSNUM (OPTIONAL)
   ;"        SET ENTRY(22700)=PtNUM  Medic AccountNumber (OPTIONAL)
   ;"        SET ENTRY(22701)=SequelSystems PMS AccountNumber (OPTIONAL)
   ;"        SET ENTRY(22702)=Paradigm PMS AccountNumber (OPTIONAL)
@@ -219,7 +219,7 @@ LOOKUPPAT(ENTRY)        ;
   NEW TMGRESULT SET TMGRESULT=0   ;"SET default to no match, or conflict found
   NEW TMGMSG,TMGOUT,RECCOMP
   ;"If can find patient by SSNUM, then don't look any further (IF successful)
-  NEW ASSN SET ASSN=$$UP^XLFSTR($GET(ENTRY(537043)))
+  NEW ASSN SET ASSN=$$UP^XLFSTR($GET(ENTRY(.094)))
   IF ASSN'["P",+ASSN>0 SET TMGRESULT=$$SSNLKUP(ASSN)
   IF TMGRESULT>0 GOTO LUDN
   ;
@@ -235,24 +235,24 @@ LOOKUPPAT(ENTRY)        ;
   NEW VALUE SET VALUE=$GET(ENTRY(.01))
   ;"=========================================================
   ;"FIND^DIC(File,IENStr,Fields,Flags,Value,Number,Indexes,Screen,Ident,OutVarP,ErrVarP)
-  NEW FIELDS SET FIELDS="@;.01;.02;.03;537043"
+  NEW FIELDS SET FIELDS="@;.01;.02;.03;.094"
   IF $$FLDEXISTS(22700) SET FIELDS=FIELDS_";22700"
   DO FIND^DIC(2,"",FIELDS,"M",VALUE,"*","","","","TMGOUT","TMGMSG")
   ;"-----------------------------------------------------------
   ;"Here is an example of the output of FIND^DIC():
   ;"TMGOUT("DILIST",0)="2^*^0^" <-2 matches
-  ;"TMGOUT("DILIST",0,"MAP")=".01^.02^.03^537043^22700"
+  ;"TMGOUT("DILIST",0,"MAP")=".01^.02^.03^.094^22700"
   ;"TMGOUT("DILIST",2,1)=16
   ;"TMGOUT("DILIST",2,2)=2914
   ;"TMGOUT("DILIST","ID",1,.01)="VIRIATO,ENEAS"
   ;"TMGOUT("DILIST","ID",1,.02)="MALE"
   ;"TMGOUT("DILIST","ID",1,.03)="01/20/1957"
-  ;"TMGOUT("DILIST","ID",1,537043)=123237654
+  ;"TMGOUT("DILIST","ID",1,.094)=123237654
   ;"TMGOUT("DILIST","ID",1,22700)=3542340
   ;"TMGOUT("DILIST","ID",2,.01)="VOID,BURT"
   ;"TMGOUT("DILIST","ID",2,.02)="FEMALE"
   ;"TMGOUT("DILIST","ID",2,.03)=""
-  ;"TMGOUT("DILIST","ID",2,537043)=""
+  ;"TMGOUT("DILIST","ID",2,.094)=""
   ;"TMGOUT("DILIST","ID",1,22700)=000455454
   ;"-----------------------------------------------
   IF $DATA(TMGMSG("DIERR")) DO SHOWDIER^TMGDEBU2(.TMGMSG)
@@ -286,7 +286,7 @@ EXTRLKUP(ENTRY,INTENSITY) ;"EXTRA LOOKUP
   ;"          ENTRY(.01)=Name
   ;"          ENTRY(.02)=Sex
   ;"          ENTRY(.03)=DOB
-  ;"          ENTRY(.09)=SSNUM
+  ;"          ENTRY(.094)=SSNUM
   ;"          ENTRY(22701)=SequelMedSystem Account Number
   ;"       INTENSITY -- How intense to search.
   ;"              NOTE: Because this returns the FIRST match, is it advised that this function
@@ -314,7 +314,7 @@ EXTRLKUP(ENTRY,INTENSITY) ;"EXTRA LOOKUP
   NEW RECCOMP
   ;
   ;"If can find patient by SSNUM, then don't look any further (if successful)
-  IF +$GET(ENTRY(537043))>0 SET TMGRESULT=$$SSNLKUP(ENTRY(537043))
+  IF +$GET(ENTRY(.094))>0 SET TMGRESULT=$$SSNLKUP(ENTRY(.094))
   IF TMGRESULT>0 GOTO LUDN
   ;
   ;"If can find patient by SequelMedSystem account number, then don't look any further (if successful)
@@ -476,7 +476,7 @@ COMPARE(TESTDATA,DBDATA,EntryNUM)        ;
   ;"        EntryNUM -- Entry number in DBDATA
   ;"Results:
   ;"        return value = CONFLICT (0)   IF entries conflict
-  ;"        return valu e = FULLMATCH (1)  IF entries completely match
+  ;"        return value = FULLMATCH (1)  IF entries completely match
   ;"        return value = EXTRAINFO (2)  IF entries have no conflict, but tEntry has extra info.
   ;"        return value = INSUFFICIENT (3) Insufficient data to make match, but no conflict.
   ;"Note: The following data sets will be sufficient for a match:
@@ -498,12 +498,12 @@ COMPARE(TESTDATA,DBDATA,EntryNUM)        ;
   ;
   IF $GET(TESTDATA(.01))="" KILL TESTDATA(.01)
   IF $GET(TESTDATA(.03))="" KILL TESTDATA(.03)
-  IF $GET(TESTDATA(537043))="" KILL TESTDATA(537043)
+  IF $GET(TESTDATA(.094))="" KILL TESTDATA(.094)
   IF $GET(TESTDATA(22700))="" KILL TESTDATA(22700)
   IF $GET(TESTDATA(22701))="" KILL TESTDATA(22701)
   ;
   ;"OK, no conflict.  But is there sufficient data for a match?
-  IF (+$GET(TESTDATA(537043))>0)&($GET(TESTDATA(537043))'["P") GOTO COMPDN ;"537043=SSNUM --> success
+  IF (+$GET(TESTDATA(.094))>0)&($GET(TESTDATA(.094))'["P") GOTO COMPDN ;".094=SSNUM --> success
   IF ($DATA(TESTDATA(22700))#10'=0) GOTO COMPDN  ;"22700=Pt. Identifier --> success
   IF ($DATA(TESTDATA(.01))#10'=0)&($DATA(TESTDATA(.03))) GOTO COMPDN ;"Name & DOB-->success
   ;
@@ -545,9 +545,9 @@ COMPENTRY(TESTDATA,DBDATAENTRY)        ;
   ;"     DBDATAENTRY(.01)="DOE,JOHN J"
   ;"  Also, patient might have an ALIAS, and that wouldn't name match either...
   ;
-  IF $DATA(TESTDATA(537043))#10'=0 DO
-  . SET TD=$GET(TESTDATA(537043))      ;"field .09 = SSNUM
-  . SET DBD=$GET(DBDATAENTRY(537043))
+  IF $DATA(TESTDATA(.094))#10'=0 DO
+  . SET TD=$GET(TESTDATA(.094))      ;"field .094 = SSNUM
+  . SET DBD=$GET(DBDATAENTRY(.094))
   . SET TMGRESULT=$$FLDCOMP^TMGDBAPI(TD,DBD,"SSNUM")
   IF TMGRESULT=CONFLICT GOTO CMPEDN
   IF TMGRESULT=EXTRAINFO SET EXTRA=1
@@ -578,11 +578,11 @@ ADDTOPAT(ADFN,ENTRY)        ;
   ;"PURPOSE: Stuffs ENTRY into record number ADFN (RecNum must already exist)
   ;"INPUT:   ADFN -- the record number, in file 2, that is to be updated
   ;"         ENTRY -- PASS BY REFERENCE.  Format: ENTRY(FldNum)=Value
-  ;"The following FieldNumbers will be used if avail: .01,.02,.03,.09,22700
+  ;"The following FieldNumbers will be used if avail: .01,.02,.03,.094,22700
   ;"Results: 1 = OK, or 0 for abort
   NEW TMGFDA,TMGRESULT SET TMGRESULT=1  
   NEW FLD FOR FLD=.01,.02,.03,22700 DO    ;".01=NAME,.02=SEX,.03=DOB
-  . IF FLD=537043,$GET(ENTRY(537043))["P" QUIT
+  . IF FLD=.094,$GET(ENTRY(.094))["P" QUIT
   . IF $GET(ENTRY(FLD))'="" SET TMGFDA(2,ADFN_",",FLD)=ENTRY(FLD)
   SET TMGRESULT=$$dbWrite^TMGDBAPI(.TMGFDA,1)
 ATRDN  ;
@@ -594,7 +594,7 @@ ADDNEWPAT(ENTRY)        ;
   ;" ENTRY. PASS BY REFERENCE.  Format:  
   ;"   ENTRY(.01)=Patient Name
   ;"   ENTRY(.03)=DOB
-  ;"   ENTRY(.09)=SSNUM
+  ;"   ENTRY(.094)=SSNUM
   ;"   ENTRY(22700)=Medic Pt Identifier -- optional
   ;"   ENTRY(1901)=field 1901 = VETERAN Y/N --For my purposes, use NO -- optional
   ;"   ENTRY(.301)=field .301 = "SERVICE CONNECTED?" -- required field -- optional
@@ -604,7 +604,7 @@ ADDNEWPAT(ENTRY)        ;
   ;"        Patient name (.01) -- always required
   ;"        Patient sex (.02) -- always required
   ;"        And ONE of the following...
-  ;"        1. SSNumber (.09) (not a P/pseudo value)
+  ;"        1. SSNumber (.094) (not a P/pseudo value)
   ;"        2. Patient Identifier (field 22700)
   ;"        3. DOB (.03)
   ;"Results: DFN, or -1^Message if error
